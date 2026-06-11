@@ -51,8 +51,8 @@ export function startFishingGame(callbacks) {
   // Get current modifiers from upgrades
   modifiers = getModifiers();
 
-  // Roll a fish based on accessible depth
-  currentFish = rollFish(modifiers.maxDepth);
+  // Roll a fish based on accessible depth + bait rarity boost
+  currentFish = rollFish(modifiers.maxDepth, modifiers.rarityBoost);
 
   // Roll weight with charm bonus
   currentWeight = rollWeight(currentFish) * modifiers.weightBonus;

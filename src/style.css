@@ -409,8 +409,17 @@ html, body {
 }
 
 #caught-fish-preview {
-  font-size: 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 64px;
   animation: bounce 0.6s ease infinite alternate;
+}
+
+#caught-fish-preview img,
+#caught-fish-preview div {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
 }
 
 @keyframes bounce {
@@ -719,4 +728,37 @@ html, body {
 /* === Utility === */
 .hidden {
   display: none !important;
+}
+
+/* === Environment Decorations === */
+.env-decoration {
+  position: absolute;
+  pointer-events: none;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  z-index: 1;
+}
+
+.env-bottom {
+  z-index: 2;
+}
+
+.env-tall {
+  z-index: 1;
+  animation: sway 4s ease-in-out infinite alternate;
+}
+
+.env-bg {
+  z-index: 0;
+  animation: floatSlow 8s ease-in-out infinite alternate;
+}
+
+@keyframes sway {
+  0% { transform: rotate(-2deg); }
+  100% { transform: rotate(2deg); }
+}
+
+@keyframes floatSlow {
+  0% { transform: translateY(0) translateX(0); }
+  100% { transform: translateY(-5px) translateX(3px); }
 }

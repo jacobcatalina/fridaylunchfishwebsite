@@ -4,11 +4,12 @@
  */
 
 import { startFishingGame } from './fishing-game.js';
-import { getAquariumFish, addFishToAquarium, renderAquarium, renderNewFish } from './aquarium.js';
+import { getAquariumFish, addFishToAquarium, renderAquarium, renderNewFish, renderEnvironment } from './aquarium.js';
 import { rarityColor, rarityLabel, calculateSellPrice } from './fish-data.js';
 import { getPlayerData, savePlayerData, earnMoney, recordCatch, getModifiers, SHOP_ITEMS, getItemCost, buyUpgrade } from './shop.js';
 import { initMultiplayer, addFishToSharedAquarium, updateLeaderboard, getLeaderboardRankings } from './multiplayer.js';
 import { initSprites } from './sprite-config.js';
+import { createSpriteElement } from './sprites.js';
 
 // === Player identity ===
 const PLAYER_KEY = 'fridayfish_player';
@@ -27,6 +28,7 @@ async function init() {
   await initSprites();
 
   createBubbles();
+  renderEnvironment();
   renderAquarium();
   updateMoneyDisplay();
 
@@ -130,7 +132,13 @@ function showCatchPrompt(fish, weight, size) {
   const sellPrice = calculateSellPrice(fish, weight, modifiers.sellPriceBonus);
 
   document.getElementById('caught-species').textContent = fish.name;
-  document.getElementById('caught-fish-preview').textContent = fish.emoji;
+
+  // Render sprite in preview
+  const previewEl = document.getElementById('caught-fish-preview');
+  previewEl.innerHTML = '';
+  const spriteEl = createSpriteElement(fish.spriteKey, fish.emoji, 64);
+  previewEl.appendChild(spriteEl);
+
   document.getElementById('caught-rarity').textContent = rarityLabel(fish.rarity);
   document.getElementById('caught-rarity').style.color = rarityColor(fish.rarity);
   document.getElementById('caught-weight').textContent = `${weight} lbs`;
@@ -148,6 +156,7 @@ function onSendToAquarium() {
 
   const fishRecord = {
     species: pendingCatch.name,
+    spriteKey: pendingCatch.spriteKey,
     emoji: pendingCatch.emoji,
     rarity: pendingCatch.rarity,
     customName: customName,
@@ -190,6 +199,7 @@ function onSellFish() {
   // Update multiplayer leaderboard
   const fishRecord = {
     species: pendingCatch.name,
+    spriteKey: pendingCatch.spriteKey,
     emoji: pendingCatch.emoji,
     rarity: pendingCatch.rarity,
     customName: pendingCatch.name,
@@ -226,6 +236,18 @@ function renderShop() {
   const container = document.getElementById('shop-items');
   container.innerHTML = '';
   const data = getPlayerData();
+
+  // Map shop item IDs to sprite sheet item keys for visual flair
+  const itemSpriteMap = {
+    rod: 'item-rod',
+    hook: 'item-hook',
+    bait: 'item-bait',
+    net: 'item-net',
+    sinker: 'item-tackle',
+    line: 'item-bobber',
+    sonar: 'item-bucket',
+    charm: 'item-fish-caught',
+  };
 
   SHOP_ITEMS.forEach(item => {
     const level = data.upgrades[item.id] || 0;
