@@ -1,11 +1,13 @@
 /**
  * Friday Fishing — Main entry point.
- * Orchestrates the aquarium, fishing game, and player identity.
+ * Orchestrates: aquarium, fishing game, shop, player stats, multiplayer.
  */
 
 import { startFishingGame } from './fishing-game.js';
 import { getAquariumFish, addFishToAquarium, renderAquarium, renderNewFish } from './aquarium.js';
-import { rarityColor } from './fish-data.js';
+import { rarityColor, rarityLabel, calculateSellPrice } from './fish-data.js';
+import { getPlayerData, savePlayerData, earnMoney, recordCatch, getModifiers, SHOP_ITEMS, getItemCost, buyUpgrade } from './shop.js';
+import { initMultiplayer, addFishToSharedAquarium, updateLeaderboard, getLeaderboardRankings } from './multiplayer.js';
 
 // === Player identity ===
 const PLAYER_KEY = 'fridayfish_player';
@@ -19,35 +21,47 @@ function setPlayerName(name) {
 }
 
 // === Init ===
-function init() {
+async function init() {
   createBubbles();
   renderAquarium();
-  updateFishCount();
+  updateMoneyDisplay();
 
   const playerName = getPlayerName();
   if (!playerName) {
     showPlayerSetup();
   }
 
-  // Bind cast button
+  // Initialize multiplayer
+  await initMultiplayer({
+    onStateChange: (type, data) => {
+      if (type === 'aquarium') {
+        renderAquarium(data.fish || []);
+      }
+      if (type === 'leaderboard') {
+        renderLeaderboardUI();
+      }
+    },
+  });
+
+  // Bind events
   document.getElementById('cast-button').addEventListener('click', onCast);
-
-  // Bind player name confirm
+  document.getElementById('shop-button').addEventListener('click', toggleShop);
+  document.getElementById('leaderboard-button').addEventListener('click', toggleLeaderboard);
   document.getElementById('player-name-confirm').addEventListener('click', onPlayerNameConfirm);
+  document.getElementById('confirm-aquarium-button').addEventListener('click', onSendToAquarium);
+  document.getElementById('confirm-sell-button').addEventListener('click', onSellFish);
+  document.getElementById('close-shop').addEventListener('click', toggleShop);
+  document.getElementById('close-leaderboard').addEventListener('click', toggleLeaderboard);
 
-  // Bind fish name confirm
-  document.getElementById('confirm-name-button').addEventListener('click', onFishNameConfirm);
-
-  // Allow enter key on inputs
+  // Enter key on inputs
   document.getElementById('player-name-input').addEventListener('keydown', (e) => {
     if (e.key === 'Enter') onPlayerNameConfirm();
   });
   document.getElementById('fish-name-input').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') onFishNameConfirm();
+    if (e.key === 'Enter') onSendToAquarium();
   });
 
-  // Simple presence counter (local only for now, will use playhtml later)
-  updatePresence();
+  renderLeaderboardUI();
 }
 
 // === Bubbles ===
@@ -83,6 +97,8 @@ function onPlayerNameConfirm() {
 
 // === Fishing ===
 let pendingCatch = null;
+let pendingWeight = 0;
+let pendingSize = 0;
 
 function onCast() {
   const playerName = getPlayerName();
@@ -92,9 +108,11 @@ function onCast() {
   }
 
   startFishingGame({
-    onCatch: (fish) => {
+    onCatch: (fish, weight, size) => {
       pendingCatch = fish;
-      showNamePrompt(fish);
+      pendingWeight = weight;
+      pendingSize = size;
+      showCatchPrompt(fish, weight, size);
     },
     onEscape: (fish) => {
       showToast(`The ${fish.name} got away! 💨`);
@@ -102,36 +120,198 @@ function onCast() {
   });
 }
 
-// === Name prompt ===
-function showNamePrompt(fish) {
+// === Catch prompt (sell or keep) ===
+function showCatchPrompt(fish, weight, size) {
+  const modifiers = getModifiers();
+  const sellPrice = calculateSellPrice(fish, weight, modifiers.sellPriceBonus);
+
   document.getElementById('caught-species').textContent = fish.name;
   document.getElementById('caught-fish-preview').textContent = fish.emoji;
+  document.getElementById('caught-rarity').textContent = rarityLabel(fish.rarity);
+  document.getElementById('caught-rarity').style.color = rarityColor(fish.rarity);
+  document.getElementById('caught-weight').textContent = `${weight} lbs`;
+  document.getElementById('caught-size').textContent = `${size} in`;
+  document.getElementById('sell-price').textContent = `$${sellPrice}`;
   document.getElementById('fish-name-input').value = '';
-  document.getElementById('name-prompt').classList.remove('hidden');
+  document.getElementById('catch-prompt').classList.remove('hidden');
   document.getElementById('fish-name-input').focus();
 }
 
-function onFishNameConfirm() {
+function onSendToAquarium() {
   const input = document.getElementById('fish-name-input');
-  const customName = input.value.trim() || pendingCatch.name; // default to species name
+  const customName = input.value.trim() || pendingCatch.name;
+  const playerName = getPlayerName();
 
   const fishRecord = {
     species: pendingCatch.name,
     emoji: pendingCatch.emoji,
     rarity: pendingCatch.rarity,
     customName: customName,
-    caughtBy: getPlayerName(),
+    caughtBy: playerName,
+    weight: pendingWeight,
+    size: pendingSize,
     timestamp: Date.now(),
   };
 
+  // Local
   addFishToAquarium(fishRecord);
   renderNewFish(fishRecord);
-  updateFishCount();
 
-  document.getElementById('name-prompt').classList.add('hidden');
+  // Stats
+  recordCatch(fishRecord.species, customName, pendingWeight);
+
+  // Multiplayer
+  addFishToSharedAquarium(fishRecord);
+  updateLeaderboard(playerName, fishRecord);
+
+  document.getElementById('catch-prompt').classList.add('hidden');
   pendingCatch = null;
 
-  showToast(`${getPlayerName()} caught & named: "${customName}" 🎣`);
+  showToast(`${playerName} added "${customName}" to the aquarium! 🐠`);
+  renderLeaderboardUI();
+}
+
+function onSellFish() {
+  const modifiers = getModifiers();
+  const sellPrice = calculateSellPrice(pendingCatch, pendingWeight, modifiers.sellPriceBonus);
+  const playerName = getPlayerName();
+
+  // Record the catch in stats even if selling
+  recordCatch(pendingCatch.name, pendingCatch.name, pendingWeight);
+
+  // Earn money
+  earnMoney(sellPrice);
+  updateMoneyDisplay();
+
+  // Update multiplayer leaderboard
+  const fishRecord = {
+    species: pendingCatch.name,
+    emoji: pendingCatch.emoji,
+    rarity: pendingCatch.rarity,
+    customName: pendingCatch.name,
+    caughtBy: playerName,
+    weight: pendingWeight,
+    size: pendingSize,
+    timestamp: Date.now(),
+  };
+  updateLeaderboard(playerName, fishRecord);
+
+  document.getElementById('catch-prompt').classList.add('hidden');
+  pendingCatch = null;
+
+  showToast(`Sold for $${sellPrice}! 💰`);
+  renderLeaderboardUI();
+}
+
+// === Money display ===
+function updateMoneyDisplay() {
+  const data = getPlayerData();
+  document.getElementById('money-display').textContent = `$${data.money}`;
+}
+
+// === Shop ===
+function toggleShop() {
+  const shopEl = document.getElementById('shop-panel');
+  shopEl.classList.toggle('hidden');
+  if (!shopEl.classList.contains('hidden')) {
+    renderShop();
+  }
+}
+
+function renderShop() {
+  const container = document.getElementById('shop-items');
+  container.innerHTML = '';
+  const data = getPlayerData();
+
+  SHOP_ITEMS.forEach(item => {
+    const level = data.upgrades[item.id] || 0;
+    const maxed = level >= item.maxLevel;
+    const cost = maxed ? '—' : `$${getItemCost(item, level)}`;
+    const canAfford = !maxed && data.money >= getItemCost(item, level);
+
+    const el = document.createElement('div');
+    el.className = `shop-item ${maxed ? 'maxed' : ''} ${canAfford ? 'affordable' : ''}`;
+    el.innerHTML = `
+      <div class="shop-item-header">
+        <span class="shop-item-emoji">${item.emoji}</span>
+        <span class="shop-item-name">${item.name}</span>
+      </div>
+      <div class="shop-item-desc">${item.description}</div>
+      <div class="shop-item-effect">${item.effect}</div>
+      <div class="shop-item-footer">
+        <span class="shop-item-level">Lv ${level}/${item.maxLevel}</span>
+        <button class="shop-buy-btn" ${maxed || !canAfford ? 'disabled' : ''}>${maxed ? 'MAX' : cost}</button>
+      </div>
+    `;
+
+    if (!maxed && canAfford) {
+      el.querySelector('.shop-buy-btn').addEventListener('click', () => {
+        if (buyUpgrade(item.id)) {
+          updateMoneyDisplay();
+          renderShop();
+          showToast(`Upgraded ${item.name}! ${item.emoji}`);
+        }
+      });
+    }
+
+    container.appendChild(el);
+  });
+}
+
+// === Leaderboard ===
+function toggleLeaderboard() {
+  const el = document.getElementById('leaderboard-panel');
+  el.classList.toggle('hidden');
+  if (!el.classList.contains('hidden')) {
+    renderLeaderboardUI();
+  }
+}
+
+function renderLeaderboardUI() {
+  const container = document.getElementById('leaderboard-content');
+  if (!container) return;
+
+  const { mostCaught, biggestCatch } = getLeaderboardRankings();
+
+  // Also show local player stats
+  const data = getPlayerData();
+  const playerName = getPlayerName() || 'You';
+
+  let html = `
+    <div class="lb-section">
+      <h3>🏆 Most Fish Caught</h3>
+      ${mostCaught.length === 0 ? '<p class="lb-empty">No catches yet!</p>' : ''}
+      ${mostCaught.slice(0, 5).map((p, i) => `
+        <div class="lb-row">
+          <span class="lb-rank">${i + 1}.</span>
+          <span class="lb-name">${p.name}</span>
+          <span class="lb-value">${p.totalCaught} fish</span>
+        </div>
+      `).join('')}
+    </div>
+    <div class="lb-section">
+      <h3>🐋 Biggest Catch</h3>
+      ${biggestCatch.length === 0 ? '<p class="lb-empty">No catches yet!</p>' : ''}
+      ${biggestCatch.slice(0, 5).map((p, i) => `
+        <div class="lb-row">
+          <span class="lb-rank">${i + 1}.</span>
+          <span class="lb-name">${p.name}</span>
+          <span class="lb-value">${p.biggestWeight} lbs</span>
+        </div>
+        ${p.biggestFish ? `<div class="lb-detail">${p.biggestFish}</div>` : ''}
+      `).join('')}
+    </div>
+    <div class="lb-section">
+      <h3>📊 Your Stats</h3>
+      <div class="lb-row"><span>Total caught:</span><span>${data.stats.totalCaught}</span></div>
+      <div class="lb-row"><span>Total sold:</span><span>${data.stats.totalSold}</span></div>
+      <div class="lb-row"><span>Total earned:</span><span>$${data.stats.totalEarned}</span></div>
+      <div class="lb-row"><span>Biggest catch:</span><span>${data.stats.biggestWeight} lbs</span></div>
+      ${data.stats.biggestFishName ? `<div class="lb-detail">${data.stats.biggestFishName} (${data.stats.biggestFishSpecies})</div>` : ''}
+    </div>
+  `;
+
+  container.innerHTML = html;
 }
 
 // === Toasts ===
@@ -142,18 +322,6 @@ function showToast(message) {
   toast.textContent = message;
   container.appendChild(toast);
   setTimeout(() => toast.remove(), 3000);
-}
-
-// === Presence (placeholder — will be playhtml) ===
-function updatePresence() {
-  // For now just show 1 (you). With playhtml this becomes live.
-  document.getElementById('player-count').textContent = '1';
-}
-
-// === Fish count ===
-function updateFishCount() {
-  const count = getAquariumFish().length;
-  // Could display this somewhere if desired
 }
 
 // === Start ===

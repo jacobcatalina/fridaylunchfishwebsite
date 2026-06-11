@@ -5,34 +5,40 @@
  * - Player holds (tap/click) to raise a "catch zone" bar.
  * - Overlap = progress fills. No overlap = progress drains.
  * - Fill to 100% = catch. Drain to 0% = escape.
+ *
+ * Now accepts modifiers from the upgrade system.
  */
 
-import { rollFish } from './fish-data.js';
+import { rollFish, rollWeight, rollSize } from './fish-data.js';
+import { getModifiers } from './shop.js';
 
 let gameActive = false;
 let animFrame = null;
 
 // Game state
-let fishY = 0.5;        // 0-1, position of fish target (center)
+let fishY = 0.5;
 let fishVelocity = 0;
-let catchZoneY = 0.8;   // 0-1, position of catch zone (bottom edge)
+let catchZoneY = 0.8;
 let catchZoneVelocity = 0;
-let progress = 0.4;     // 0-1, starts at 40%
+let progress = 0.4;
 let isHolding = false;
 let currentFish = null;
+let currentWeight = 0;
+let currentSize = 0;
 
-// Tuning constants
-const CATCH_ZONE_HEIGHT = 0.2;    // 20% of bar
-const FISH_SIZE = 0.07;           // 7% of bar
-const GRAVITY = 0.0015;           // catch zone fall speed
-const LIFT = -0.004;              // catch zone rise on hold
+// Tuning constants (base values, modified by upgrades)
+const BASE_CATCH_ZONE_HEIGHT = 0.18;
+const FISH_SIZE = 0.07;
+const GRAVITY = 0.0015;
+const LIFT = -0.004;
 const MAX_VELOCITY = 0.02;
 const PROGRESS_GAIN = 0.005;
-const PROGRESS_DRAIN = 0.003;
-const FISH_CHANGE_INTERVAL = 60;  // frames between direction changes (base)
+const BASE_PROGRESS_DRAIN = 0.003;
+const FISH_CHANGE_INTERVAL = 60;
 
 let fishChangeTimer = 0;
 let fishDirection = 1;
+let modifiers = {};
 
 // Callbacks
 let onCatch = null;
@@ -42,15 +48,25 @@ export function startFishingGame(callbacks) {
   onCatch = callbacks.onCatch;
   onEscape = callbacks.onEscape;
 
-  // Roll a fish
-  currentFish = rollFish();
+  // Get current modifiers from upgrades
+  modifiers = getModifiers();
+
+  // Roll a fish based on accessible depth
+  currentFish = rollFish(modifiers.maxDepth);
+
+  // Roll weight with charm bonus
+  currentWeight = rollWeight(currentFish) * modifiers.weightBonus;
+  currentWeight = Math.round(currentWeight * 100) / 100;
+
+  // Roll size
+  currentSize = rollSize(currentFish, currentWeight);
 
   // Reset state
   fishY = 0.3 + Math.random() * 0.4;
   fishVelocity = 0;
   catchZoneY = 0.8;
   catchZoneVelocity = 0;
-  progress = 0.4;
+  progress = modifiers.startingProgress; // net upgrade affects starting progress
   isHolding = false;
   fishChangeTimer = 0;
   fishDirection = Math.random() > 0.5 ? 1 : -1;
@@ -58,6 +74,11 @@ export function startFishingGame(callbacks) {
   // Show the game
   const gameEl = document.getElementById('fishing-game');
   gameEl.classList.remove('hidden');
+
+  // Update instruction with fish depth hint
+  const depthNames = { 1: 'Surface', 2: 'Mid-water', 3: 'Deep' };
+  const instruction = document.getElementById('fishing-instruction');
+  instruction.textContent = `Hold anywhere to raise the bar! [${depthNames[currentFish.depth] || 'Surface'}]`;
 
   gameActive = true;
   bindInput();
@@ -74,6 +95,14 @@ export function stopFishingGame() {
   unbindInput();
 }
 
+export function getCurrentCatch() {
+  return {
+    fish: currentFish,
+    weight: currentWeight,
+    size: currentSize,
+  };
+}
+
 function tick() {
   if (!gameActive) return;
 
@@ -85,7 +114,7 @@ function tick() {
   // Check win/lose
   if (progress >= 1) {
     stopFishingGame();
-    if (onCatch) onCatch(currentFish);
+    if (onCatch) onCatch(currentFish, currentWeight, currentSize);
     return;
   }
   if (progress <= 0) {
@@ -98,28 +127,31 @@ function tick() {
 }
 
 function updateFish() {
-  const speed = currentFish.speed;
+  // Apply sonar speed reduction
+  const speed = currentFish.speed * modifiers.fishSpeedReduction;
 
   fishChangeTimer++;
   const interval = FISH_CHANGE_INTERVAL / speed;
 
   if (fishChangeTimer > interval) {
     fishChangeTimer = 0;
-    // Change direction with some randomness
     if (Math.random() < 0.3) {
       fishDirection *= -1;
     }
     fishVelocity += fishDirection * (0.005 + Math.random() * 0.01) * speed;
   }
 
-  // Random jitter for rare fish
-  if (currentFish.rarity === 'rare' && Math.random() < 0.05) {
+  // Random jitter for rare/legendary fish
+  if ((currentFish.rarity === 'rare' || currentFish.rarity === 'legendary') && Math.random() < 0.05) {
     fishVelocity += (Math.random() - 0.5) * 0.02;
   }
 
-  fishY += fishVelocity;
+  // Extra erratic for legendary
+  if (currentFish.rarity === 'legendary' && Math.random() < 0.03) {
+    fishVelocity += (Math.random() - 0.5) * 0.04;
+  }
 
-  // Damping
+  fishY += fishVelocity;
   fishVelocity *= 0.97;
 
   // Clamp to bar
@@ -142,35 +174,36 @@ function updateCatchZone() {
     catchZoneVelocity += GRAVITY;
   }
 
-  // Clamp velocity
   catchZoneVelocity = Math.max(-MAX_VELOCITY, Math.min(MAX_VELOCITY, catchZoneVelocity));
-
   catchZoneY += catchZoneVelocity;
+
+  const zoneHeight = BASE_CATCH_ZONE_HEIGHT * modifiers.catchZoneBonus;
 
   // Bounce off edges
   if (catchZoneY < 0) {
     catchZoneY = 0;
     catchZoneVelocity = Math.abs(catchZoneVelocity) * 0.3;
   }
-  if (catchZoneY > 1 - CATCH_ZONE_HEIGHT) {
-    catchZoneY = 1 - CATCH_ZONE_HEIGHT;
+  if (catchZoneY > 1 - zoneHeight) {
+    catchZoneY = 1 - zoneHeight;
     catchZoneVelocity = -Math.abs(catchZoneVelocity) * 0.3;
   }
 }
 
 function updateProgress() {
-  // Check if fish overlaps with catch zone
+  const zoneHeight = BASE_CATCH_ZONE_HEIGHT * modifiers.catchZoneBonus;
   const fishTop = fishY - FISH_SIZE / 2;
   const fishBottom = fishY + FISH_SIZE / 2;
   const zoneTop = catchZoneY;
-  const zoneBottom = catchZoneY + CATCH_ZONE_HEIGHT;
+  const zoneBottom = catchZoneY + zoneHeight;
 
   const overlapping = fishBottom > zoneTop && fishTop < zoneBottom;
 
   if (overlapping) {
     progress += PROGRESS_GAIN;
   } else {
-    progress -= PROGRESS_DRAIN;
+    // Line upgrade reduces drain
+    progress -= BASE_PROGRESS_DRAIN * modifiers.drainReduction;
   }
 
   progress = Math.max(0, Math.min(1, progress));
@@ -179,17 +212,18 @@ function updateProgress() {
 function render() {
   const barEl = document.getElementById('reel-bar');
   const barHeight = barEl.offsetHeight;
+  const zoneHeight = BASE_CATCH_ZONE_HEIGHT * modifiers.catchZoneBonus;
 
   // Fish target position
   const fishEl = document.getElementById('fish-target');
-  const fishTop = fishY * barHeight - 14; // 14 = half of element height
+  const fishTop = fishY * barHeight - 14;
   fishEl.style.top = `${fishTop}px`;
 
   // Catch zone position
   const zoneEl = document.getElementById('catch-zone');
-  const zoneHeight = CATCH_ZONE_HEIGHT * barHeight;
+  const zonePixelHeight = zoneHeight * barHeight;
   const zoneTop = catchZoneY * barHeight;
-  zoneEl.style.height = `${zoneHeight}px`;
+  zoneEl.style.height = `${zonePixelHeight}px`;
   zoneEl.style.top = `${zoneTop}px`;
   zoneEl.style.bottom = 'auto';
 
@@ -197,7 +231,6 @@ function render() {
   const progressEl = document.getElementById('progress-bar');
   progressEl.style.height = `${progress * 100}%`;
 
-  // Color progress bar based on state
   if (progress > 0.7) {
     progressEl.style.background = 'linear-gradient(180deg, #4ecdc4, #2ba89e)';
   } else if (progress > 0.3) {

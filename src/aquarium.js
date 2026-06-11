@@ -1,13 +1,13 @@
 /**
- * Aquarium module — manages fish in the shared tank.
- * For now uses localStorage; will be replaced with playhtml for multiplayer.
+ * Aquarium module — manages fish in the shared tank (visual rendering).
+ * Uses localStorage as fallback; playhtml syncs across players.
  */
 
 const STORAGE_KEY = 'fridayfish_aquarium';
 const MAX_FISH = 100;
 
 /**
- * Get all fish from storage.
+ * Get all fish from local storage.
  */
 export function getAquariumFish() {
   try {
@@ -19,12 +19,11 @@ export function getAquariumFish() {
 }
 
 /**
- * Add a fish to the aquarium.
+ * Add a fish to local aquarium storage.
  */
 export function addFishToAquarium(fish) {
   const current = getAquariumFish();
   current.push(fish);
-  // Keep only the latest MAX_FISH
   const trimmed = current.slice(-MAX_FISH);
   localStorage.setItem(STORAGE_KEY, JSON.stringify(trimmed));
   return trimmed;
@@ -33,11 +32,11 @@ export function addFishToAquarium(fish) {
 /**
  * Render all fish into the aquarium container.
  */
-export function renderAquarium() {
+export function renderAquarium(fishList) {
   const container = document.getElementById('fish-container');
   container.innerHTML = '';
 
-  const fish = getAquariumFish();
+  const fish = fishList || getAquariumFish();
   fish.forEach((f, i) => {
     const el = createFishElement(f, i);
     container.appendChild(el);
@@ -59,10 +58,10 @@ function createFishElement(fish, index) {
   el.className = 'aquarium-fish';
 
   // Random position within the tank
-  const top = 10 + Math.random() * 60; // 10-70% from top
-  const left = Math.random() * 85; // 0-85% from left
-  const duration = 4 + Math.random() * 6; // 4-10s swim cycle
-  const delay = Math.random() * -10; // stagger
+  const top = 10 + Math.random() * 60;
+  const left = Math.random() * 85;
+  const duration = 4 + Math.random() * 6;
+  const delay = Math.random() * -10;
   const direction = Math.random() > 0.5 ? 1 : -1;
 
   el.style.top = `${top}%`;
@@ -84,7 +83,8 @@ function createFishElement(fish, index) {
 
   // Tap to see details
   el.addEventListener('click', () => {
-    showFishToast(`"${fish.customName}" (${fish.species}) — caught by ${fish.caughtBy}`);
+    const weight = fish.weight ? ` — ${fish.weight} lbs` : '';
+    showFishToast(`"${fish.customName}" (${fish.species})${weight} — caught by ${fish.caughtBy}`);
   });
 
   return el;

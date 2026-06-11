@@ -21,8 +21,10 @@
   <div id="ui-overlay">
     <div id="header">
       <h1>Friday Fishing</h1>
-      <div id="presence">
-        <span id="player-count">0</span> fishing now
+      <div id="header-right">
+        <span id="money-display">$0</span>
+        <button id="shop-button" class="icon-btn" title="Shop">🛒</button>
+        <button id="leaderboard-button" class="icon-btn" title="Leaderboard">🏆</button>
       </div>
     </div>
 
@@ -52,14 +54,48 @@
     </div>
   </div>
 
-  <!-- Name prompt overlay -->
-  <div id="name-prompt" class="hidden">
-    <div id="name-prompt-inner">
+  <!-- Catch prompt (sell or keep) -->
+  <div id="catch-prompt" class="hidden">
+    <div id="catch-prompt-inner">
       <h2>You caught a <span id="caught-species"></span>!</h2>
       <div id="caught-fish-preview"></div>
-      <label for="fish-name-input">Name your fish:</label>
-      <input type="text" id="fish-name-input" maxlength="20" placeholder="e.g. Sir Bass-a-lot" />
-      <button id="confirm-name-button">Add to Aquarium 🐠</button>
+      <div id="catch-stats">
+        <span id="caught-rarity"></span>
+        <span id="caught-weight"></span> · <span id="caught-size"></span>
+      </div>
+      <div id="catch-actions">
+        <div id="aquarium-option">
+          <label for="fish-name-input">Name it & add to aquarium:</label>
+          <input type="text" id="fish-name-input" maxlength="20" placeholder="e.g. Sir Bass-a-lot" />
+          <button id="confirm-aquarium-button">🐠 Add to Aquarium</button>
+        </div>
+        <div id="sell-option">
+          <p>Or sell for <span id="sell-price">$0</span></p>
+          <button id="confirm-sell-button">💰 Sell Fish</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Shop panel -->
+  <div id="shop-panel" class="hidden">
+    <div id="shop-panel-inner">
+      <div id="shop-header">
+        <h2>🛒 Shop</h2>
+        <button id="close-shop" class="close-btn">✕</button>
+      </div>
+      <div id="shop-items"></div>
+    </div>
+  </div>
+
+  <!-- Leaderboard panel -->
+  <div id="leaderboard-panel" class="hidden">
+    <div id="leaderboard-panel-inner">
+      <div id="leaderboard-header">
+        <h2>🏆 Leaderboard</h2>
+        <button id="close-leaderboard" class="close-btn">✕</button>
+      </div>
+      <div id="leaderboard-content"></div>
     </div>
   </div>
 
