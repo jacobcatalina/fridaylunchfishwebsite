@@ -4,7 +4,7 @@
  */
 
 import { startFishingGame } from './fishing-game.js';
-import { getAquariumFish, addFishToAquarium, renderAquarium, renderNewFish, renderEnvironment } from './aquarium.js';
+import { getAquariumFish, addFishToAquarium, renderAquarium, renderNewFish } from './aquarium.js';
 import { rarityColor, rarityLabel, calculateSellPrice } from './fish-data.js';
 import { getPlayerData, savePlayerData, earnMoney, recordCatch, getModifiers, SHOP_ITEMS, getItemCost, buyUpgrade } from './shop.js';
 import { initMultiplayer, addFishToSharedAquarium, updateLeaderboard, getLeaderboardRankings } from './multiplayer.js';
@@ -28,7 +28,6 @@ async function init() {
   await initSprites();
 
   createBubbles();
-  renderEnvironment();
   renderAquarium();
   updateMoneyDisplay();
 
@@ -52,12 +51,15 @@ async function init() {
   // Bind events
   document.getElementById('cast-button').addEventListener('click', onCast);
   document.getElementById('shop-button').addEventListener('click', toggleShop);
-  document.getElementById('leaderboard-button').addEventListener('click', toggleLeaderboard);
   document.getElementById('player-name-confirm').addEventListener('click', onPlayerNameConfirm);
   document.getElementById('confirm-aquarium-button').addEventListener('click', onSendToAquarium);
   document.getElementById('confirm-sell-button').addEventListener('click', onSellFish);
   document.getElementById('close-shop').addEventListener('click', toggleShop);
-  document.getElementById('close-leaderboard').addEventListener('click', toggleLeaderboard);
+
+  // Leaderboard sidebar — tap to expand on mobile
+  document.getElementById('leaderboard-sidebar').querySelector('h2').addEventListener('click', () => {
+    document.getElementById('leaderboard-sidebar').classList.toggle('expanded');
+  });
 
   // Enter key on inputs
   document.getElementById('player-name-input').addEventListener('keydown', (e) => {
@@ -231,7 +233,6 @@ function toggleShop() {
     renderShop();
   }
 }
-
 function renderShop() {
   const container = document.getElementById('shop-items');
   container.innerHTML = '';
@@ -284,34 +285,24 @@ function renderShop() {
   });
 }
 
-// === Leaderboard ===
-function toggleLeaderboard() {
-  const el = document.getElementById('leaderboard-panel');
-  el.classList.toggle('hidden');
-  if (!el.classList.contains('hidden')) {
-    renderLeaderboardUI();
-  }
-}
-
+// === Leaderboard (always visible in sidebar) ===
 function renderLeaderboardUI() {
   const container = document.getElementById('leaderboard-content');
   if (!container) return;
 
   const { mostCaught, biggestCatch } = getLeaderboardRankings();
-
-  // Also show local player stats
   const data = getPlayerData();
   const playerName = getPlayerName() || 'You';
 
   let html = `
     <div class="lb-section">
-      <h3>🏆 Most Fish Caught</h3>
+      <h3>🎣 Most Caught</h3>
       ${mostCaught.length === 0 ? '<p class="lb-empty">No catches yet!</p>' : ''}
       ${mostCaught.slice(0, 5).map((p, i) => `
         <div class="lb-row">
           <span class="lb-rank">${i + 1}.</span>
           <span class="lb-name">${p.name}</span>
-          <span class="lb-value">${p.totalCaught} fish</span>
+          <span class="lb-value">${p.totalCaught}</span>
         </div>
       `).join('')}
     </div>
@@ -322,18 +313,18 @@ function renderLeaderboardUI() {
         <div class="lb-row">
           <span class="lb-rank">${i + 1}.</span>
           <span class="lb-name">${p.name}</span>
-          <span class="lb-value">${p.biggestWeight} lbs</span>
+          <span class="lb-value">${p.biggestWeight}lb</span>
         </div>
         ${p.biggestFish ? `<div class="lb-detail">${p.biggestFish}</div>` : ''}
       `).join('')}
     </div>
     <div class="lb-section">
-      <h3>📊 Your Stats</h3>
-      <div class="lb-row"><span>Total caught:</span><span>${data.stats.totalCaught}</span></div>
-      <div class="lb-row"><span>Total sold:</span><span>${data.stats.totalSold}</span></div>
-      <div class="lb-row"><span>Total earned:</span><span>$${data.stats.totalEarned}</span></div>
-      <div class="lb-row"><span>Biggest catch:</span><span>${data.stats.biggestWeight} lbs</span></div>
-      ${data.stats.biggestFishName ? `<div class="lb-detail">${data.stats.biggestFishName} (${data.stats.biggestFishSpecies})</div>` : ''}
+      <h3>📊 You</h3>
+      <div class="lb-row"><span>Caught:</span><span>${data.stats.totalCaught}</span></div>
+      <div class="lb-row"><span>Sold:</span><span>${data.stats.totalSold}</span></div>
+      <div class="lb-row"><span>Earned:</span><span>$${data.stats.totalEarned}</span></div>
+      <div class="lb-row"><span>Biggest:</span><span>${data.stats.biggestWeight}lb</span></div>
+      ${data.stats.biggestFishName ? `<div class="lb-detail">${data.stats.biggestFishName}</div>` : ''}
     </div>
   `;
 

@@ -17,14 +17,21 @@
     <div id="ground"></div>
   </div>
 
+  <!-- Leaderboard sidebar (always visible on right) -->
+  <div id="leaderboard-sidebar">
+    <h2>🏆 Leaderboard</h2>
+    <div id="leaderboard-content"></div>
+  </div>
+
   <!-- UI overlay -->
   <div id="ui-overlay">
     <div id="header">
-      <h1>Friday Fishing</h1>
+      <h1>🐟 Friday Fishing</h1>
       <div id="header-right">
-        <span id="money-display">$0</span>
-        <button id="shop-button" class="icon-btn" title="Shop">🛒</button>
-        <button id="leaderboard-button" class="icon-btn" title="Leaderboard">🏆</button>
+        <div id="money-box">
+          <span id="money-display">$0</span>
+        </div>
+        <button id="shop-button" class="header-btn">🛒 Shop</button>
       </div>
     </div>
 
@@ -85,17 +92,6 @@
         <button id="close-shop" class="close-btn">✕</button>
       </div>
       <div id="shop-items"></div>
-    </div>
-  </div>
-
-  <!-- Leaderboard panel -->
-  <div id="leaderboard-panel" class="hidden">
-    <div id="leaderboard-panel-inner">
-      <div id="leaderboard-header">
-        <h2>🏆 Leaderboard</h2>
-        <button id="close-leaderboard" class="close-btn">✕</button>
-      </div>
-      <div id="leaderboard-content"></div>
     </div>
   </div>
 
