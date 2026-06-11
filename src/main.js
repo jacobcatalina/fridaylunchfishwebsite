@@ -8,6 +8,7 @@ import { getAquariumFish, addFishToAquarium, renderAquarium, renderNewFish } fro
 import { rarityColor, rarityLabel, calculateSellPrice } from './fish-data.js';
 import { getPlayerData, savePlayerData, earnMoney, recordCatch, getModifiers, SHOP_ITEMS, getItemCost, buyUpgrade } from './shop.js';
 import { initMultiplayer, addFishToSharedAquarium, updateLeaderboard, getLeaderboardRankings } from './multiplayer.js';
+import { initSprites } from './sprite-config.js';
 
 // === Player identity ===
 const PLAYER_KEY = 'fridayfish_player';
@@ -22,6 +23,9 @@ function setPlayerName(name) {
 
 // === Init ===
 async function init() {
+  // Load sprites before rendering
+  await initSprites();
+
   createBubbles();
   renderAquarium();
   updateMoneyDisplay();

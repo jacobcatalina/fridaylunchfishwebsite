@@ -3,6 +3,8 @@
  * Uses localStorage as fallback; playhtml syncs across players.
  */
 
+import { createSpriteElement, speciesToKey, hasSprite } from './sprites.js';
+
 const STORAGE_KEY = 'fridayfish_aquarium';
 const MAX_FISH = 100;
 
@@ -69,10 +71,12 @@ function createFishElement(fish, index) {
   el.style.animationDuration = `${duration}s`;
   el.style.animationDelay = `${delay}s`;
 
-  const sprite = document.createElement('span');
-  sprite.className = 'fish-sprite';
-  sprite.textContent = fish.emoji;
-  sprite.style.transform = direction === -1 ? 'scaleX(-1)' : '';
+  // Use sprite if available, otherwise emoji
+  const speciesKey = speciesToKey(fish.species);
+  const sprite = createSpriteElement(speciesKey, fish.emoji, 48);
+  if (direction === -1) {
+    sprite.style.transform = (sprite.style.transform || '') + ' scaleX(-1)';
+  }
 
   const label = document.createElement('span');
   label.className = 'fish-label';

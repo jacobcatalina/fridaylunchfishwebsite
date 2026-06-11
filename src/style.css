@@ -103,6 +103,23 @@ html, body {
   transition: transform 0.3s;
 }
 
+.aquarium-fish .fish-sprite-img,
+.aquarium-fish .fish-sprite-sheet {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+.aquarium-fish .fish-sprite-img {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+}
+
+.aquarium-fish .fish-sprite-sheet {
+  width: 48px;
+  height: 48px;
+}
+
 .aquarium-fish .fish-label {
   font-size: 0.4rem;
   color: rgba(255, 255, 255, 0.85);
