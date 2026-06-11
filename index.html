@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Friday Fishing 🐟</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body>
+  <!-- Aquarium backdrop -->
+  <div id="aquarium">
+    <div id="bubbles"></div>
+    <div id="fish-container"></div>
+    <div id="ground"></div>
+  </div>
+
+  <!-- UI overlay -->
+  <div id="ui-overlay">
+    <div id="header">
+      <h1>Friday Fishing</h1>
+      <div id="presence">
+        <span id="player-count">0</span> fishing now
+      </div>
+    </div>
+
+    <div id="cast-button-container">
+      <button id="cast-button">🎣 Cast Line</button>
+    </div>
+
+    <div id="toast-container"></div>
+  </div>
+
+  <!-- Fishing minigame overlay -->
+  <div id="fishing-game" class="hidden">
+    <div id="fishing-game-inner">
+      <div id="fishing-rod-scene">
+        <div id="water-surface"></div>
+        <div id="reel-bar-container">
+          <div id="reel-bar">
+            <div id="fish-target"></div>
+            <div id="catch-zone"></div>
+          </div>
+          <div id="progress-bar-container">
+            <div id="progress-bar"></div>
+          </div>
+        </div>
+      </div>
+      <p id="fishing-instruction">Hold anywhere to raise the bar!</p>
+    </div>
+  </div>
+
+  <!-- Name prompt overlay -->
+  <div id="name-prompt" class="hidden">
+    <div id="name-prompt-inner">
+      <h2>You caught a <span id="caught-species"></span>!</h2>
+      <div id="caught-fish-preview"></div>
+      <label for="fish-name-input">Name your fish:</label>
+      <input type="text" id="fish-name-input" maxlength="20" placeholder="e.g. Sir Bass-a-lot" />
+      <button id="confirm-name-button">Add to Aquarium 🐠</button>
+    </div>
+  </div>
+
+  <!-- Player name setup (first visit) -->
+  <div id="player-setup" class="hidden">
+    <div id="player-setup-inner">
+      <h2>Welcome, fisher!</h2>
+      <p>What's your name?</p>
+      <input type="text" id="player-name-input" maxlength="15" placeholder="Your name" />
+      <button id="player-name-confirm">Let's Fish! 🐟</button>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
