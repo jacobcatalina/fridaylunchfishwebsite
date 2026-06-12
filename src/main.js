@@ -7,7 +7,7 @@ import { startFishingGame } from './fishing-game.js';
 import { getAquariumFish, addFishToAquarium, renderAquarium, renderNewFish } from './aquarium.js';
 import { rarityColor, rarityLabel, calculateSellPrice } from './fish-data.js';
 import { getPlayerData, savePlayerData, earnMoney, recordCatch, getModifiers, SHOP_ITEMS, getItemCost, buyUpgrade } from './shop.js';
-import { initMultiplayer, addFishToSharedAquarium, updateLeaderboard, getLeaderboardRankings } from './multiplayer.js';
+import { initMultiplayer, addFishToSharedAquarium, updateLeaderboard, getLeaderboardRankings, clearSharedAquarium, clearLeaderboard } from './multiplayer.js';
 import { initSprites } from './sprite-config.js';
 import { createSpriteElement } from './sprites.js';
 
@@ -70,6 +70,9 @@ async function init() {
   });
 
   renderLeaderboardUI();
+
+  // Admin panel — append ?admin=1 to URL to show tank/leaderboard reset buttons
+  setupAdminPanel();
 }
 
 // === Bubbles ===
@@ -346,6 +349,50 @@ function showToast(message) {
   toast.textContent = message;
   container.appendChild(toast);
   setTimeout(() => toast.remove(), 3000);
+}
+
+// === Admin Panel (hidden, URL param ?admin=1) ===
+function setupAdminPanel() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('admin') !== '1') return;
+
+  const panel = document.createElement('div');
+  panel.id = 'admin-panel';
+  panel.innerHTML = `
+    <div style="position:fixed;top:50px;left:10px;z-index:999;background:rgba(0,0,0,0.9);border:2px solid #ff6b6b;border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:8px;">
+      <span style="font-size:0.5rem;color:#ff6b6b;">⚙️ ADMIN</span>
+      <button id="admin-clear-tank" style="font-family:'Press Start 2P';font-size:0.4rem;padding:8px;background:#c0392b;border:none;color:#fff;border-radius:4px;cursor:pointer;">🗑️ Empty Tank</button>
+      <button id="admin-clear-leaderboard" style="font-family:'Press Start 2P';font-size:0.4rem;padding:8px;background:#c0392b;border:none;color:#fff;border-radius:4px;cursor:pointer;">🗑️ Clear Leaderboard</button>
+      <button id="admin-clear-local" style="font-family:'Press Start 2P';font-size:0.4rem;padding:8px;background:#7f8c8d;border:none;color:#fff;border-radius:4px;cursor:pointer;">🔄 Reset Local Data</button>
+    </div>
+  `;
+  document.body.appendChild(panel);
+
+  document.getElementById('admin-clear-tank').addEventListener('click', () => {
+    if (confirm('Clear the shared aquarium for ALL players?')) {
+      clearSharedAquarium();
+      localStorage.removeItem('fridayfish_aquarium');
+      renderAquarium([]);
+      showToast('🗑️ Tank emptied!');
+    }
+  });
+
+  document.getElementById('admin-clear-leaderboard').addEventListener('click', () => {
+    if (confirm('Clear the leaderboard for ALL players?')) {
+      clearLeaderboard();
+      renderLeaderboardUI();
+      showToast('🗑️ Leaderboard cleared!');
+    }
+  });
+
+  document.getElementById('admin-clear-local').addEventListener('click', () => {
+    if (confirm('Reset YOUR local data (money, upgrades, stats)?')) {
+      localStorage.removeItem('fridayfish_playerdata');
+      localStorage.removeItem('fridayfish_aquarium');
+      localStorage.removeItem('fridayfish_player');
+      location.reload();
+    }
+  });
 }
 
 // === Start ===

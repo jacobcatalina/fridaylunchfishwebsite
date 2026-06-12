@@ -19,11 +19,13 @@ const sheetCache = new Map();
  * Register an individual sprite for a fish species.
  * @param {string} speciesKey - e.g. "striped-bass"
  * @param {string} imagePath - e.g. "/assets/fish/striped-bass.png"
+ * @param {object} options - { small: true } for 16x16 sprites that need pixelated rendering
  */
-export function registerSprite(speciesKey, imagePath) {
+export function registerSprite(speciesKey, imagePath, options = {}) {
   spriteRegistry.set(speciesKey, {
     type: 'individual',
     src: imagePath,
+    small: options.small || false,
   });
 }
 
@@ -143,11 +145,15 @@ export function createSpriteElement(speciesKey, fallbackEmoji = '🐟', displayS
   if (entry.type === 'individual') {
     const img = document.createElement('img');
     img.className = 'fish-sprite fish-sprite-img';
+    if (entry.small) img.classList.add('fish-sprite-small');
     img.src = entry.src;
     img.alt = speciesKey;
-    img.style.width = `${displaySize}px`;
-    img.style.height = `${displaySize}px`;
+    img.style.width = `${entry.small ? Math.round(displaySize * 0.6) : displaySize}px`;
+    img.style.height = `${entry.small ? Math.round(displaySize * 0.6) : displaySize}px`;
     img.style.objectFit = 'contain';
+    if (entry.small) {
+      img.style.imageRendering = 'pixelated';
+    }
     return img;
   }
 

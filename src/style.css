@@ -115,6 +115,13 @@ html, body {
   filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.4));
 }
 
+.aquarium-fish .fish-sprite-img.fish-sprite-small {
+  width: 32px;
+  height: 32px;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
 .aquarium-fish .fish-sprite-sheet {
   width: 48px;
   height: 48px;

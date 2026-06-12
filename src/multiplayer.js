@@ -1,22 +1,21 @@
 /**
  * Multiplayer module using playhtml for shared state.
- * Manages: shared aquarium, leaderboard, presence, and catch events.
- *
- * playhtml uses HTML elements with data-can-play attributes as synced state containers.
- * The data is persisted and synced across all connected clients via PartyKit.
+ * 
+ * Uses playhtml's synced store directly for reliable cross-client sync.
+ * The synced store is backed by Yjs + PartyKit, giving us:
+ * - Real-time sync across all connected clients
+ * - Persistence (data survives page refreshes)
+ * - CRDT-based conflict resolution
  */
 
 import { playhtml } from 'playhtml';
 
 let initialized = false;
 let onStateChangeCallback = null;
-
-// Element IDs for our shared state containers
-const AQUARIUM_EL_ID = 'shared-aquarium-data';
-const LEADERBOARD_EL_ID = 'shared-leaderboard-data';
+let pollInterval = null;
 
 /**
- * Initialize playhtml and set up shared state elements.
+ * Initialize playhtml and set up shared state.
  */
 export async function initMultiplayer(callbacks) {
   onStateChangeCallback = callbacks.onStateChange || (() => {});
@@ -26,49 +25,63 @@ export async function initMultiplayer(callbacks) {
       room: 'friday-fishing-main',
     });
 
-    // Wait for playhtml to be ready
     await playhtml.ready;
-
-    // Set up shared data elements
-    setupSharedElements();
     initialized = true;
-    console.log('[playhtml] Multiplayer initialized');
+    console.log('[playhtml] Multiplayer initialized, room:', playhtml.roomId);
+
+    // Initialize shared data structures in the synced store
+    const store = playhtml.syncedStore;
+    if (store) {
+      // Ensure our data keys exist
+      if (!store['aquarium']) {
+        store['aquarium'] = { fish: [], events: [] };
+      }
+      if (!store['leaderboard']) {
+        store['leaderboard'] = { players: {} };
+      }
+    }
+
+    // Poll for changes from other clients (Yjs updates are automatic,
+    // but we need to re-render when they happen)
+    startPolling();
+
   } catch (err) {
     console.warn('[playhtml] Init failed, running in local-only mode:', err.message || err);
     initialized = false;
   }
 }
 
-function setupSharedElements() {
-  // Create hidden elements that hold shared state
-  createSharedElement(AQUARIUM_EL_ID, { fish: [], events: [] });
-  createSharedElement(LEADERBOARD_EL_ID, { players: {} });
-}
-
-function createSharedElement(id, defaultData) {
-  let el = document.getElementById(id);
-  if (!el) {
-    el = document.createElement('div');
-    el.id = id;
-    el.style.display = 'none';
-    el.setAttribute('data-can-play', '');
-    el.setAttribute('data-default-data', JSON.stringify(defaultData));
-    document.body.appendChild(el);
-  }
-
-  playhtml.setupPlayElement(el);
-}
-
 /**
- * Get the element handler for a shared element.
+ * Poll the synced store for changes and trigger re-renders.
+ * playhtml syncs automatically via Yjs, but we need to detect
+ * when data changes to update our UI.
  */
-function getHandler(elementId) {
-  if (!initialized) return null;
+let lastFishCount = 0;
+let lastLeaderboardHash = '';
 
-  // playhtml stores handlers in a Map<tag, Map<elementId, handler>>
-  const canPlayHandlers = playhtml.elementHandlers.get('can-play');
-  if (!canPlayHandlers) return null;
-  return canPlayHandlers.get(elementId) || null;
+function startPolling() {
+  pollInterval = setInterval(() => {
+    if (!initialized) return;
+
+    const fishData = getSharedAquariumData();
+    const currentCount = fishData.fish ? fishData.fish.length : 0;
+
+    if (currentCount !== lastFishCount) {
+      lastFishCount = currentCount;
+      if (onStateChangeCallback) {
+        onStateChangeCallback('aquarium', fishData);
+      }
+    }
+
+    const lb = getLeaderboard();
+    const hash = JSON.stringify(lb);
+    if (hash !== lastLeaderboardHash) {
+      lastLeaderboardHash = hash;
+      if (onStateChangeCallback) {
+        onStateChangeCallback('leaderboard', lb);
+      }
+    }
+  }, 2000); // Check every 2 seconds
 }
 
 // === Shared Aquarium ===
@@ -77,37 +90,43 @@ function getHandler(elementId) {
  * Add a fish to the shared aquarium (visible to all players).
  */
 export function addFishToSharedAquarium(fishRecord) {
-  const handler = getHandler(AQUARIUM_EL_ID);
-  if (!handler) return false;
+  if (!initialized) return false;
 
   try {
-    handler.setData((draft) => {
-      if (!draft.fish) draft.fish = [];
-      draft.fish.push(fishRecord);
-      // Keep last 100 fish
-      if (draft.fish.length > 100) {
-        // Remove oldest entries
-        draft.fish.splice(0, draft.fish.length - 100);
-      }
+    const store = playhtml.syncedStore;
+    if (!store) return false;
 
-      if (!draft.events) draft.events = [];
-      draft.events.push({
-        type: 'catch',
-        player: fishRecord.caughtBy,
-        species: fishRecord.species,
-        name: fishRecord.customName,
-        weight: fishRecord.weight,
-        timestamp: Date.now(),
-      });
-      // Keep last 20 events
-      if (draft.events.length > 20) {
-        draft.events.splice(0, draft.events.length - 20);
-      }
+    if (!store['aquarium']) {
+      store['aquarium'] = { fish: [], events: [] };
+    }
+
+    const data = store['aquarium'];
+
+    if (!data.fish) data.fish = [];
+    data.fish.push(fishRecord);
+
+    // Keep last 100 fish
+    if (data.fish.length > 100) {
+      data.fish.splice(0, data.fish.length - 100);
+    }
+
+    if (!data.events) data.events = [];
+    data.events.push({
+      type: 'catch',
+      player: fishRecord.caughtBy,
+      species: fishRecord.species,
+      name: fishRecord.customName,
+      weight: fishRecord.weight,
+      timestamp: Date.now(),
     });
 
-    if (onStateChangeCallback) {
-      onStateChangeCallback('aquarium', getSharedAquariumData());
+    if (data.events.length > 20) {
+      data.events.splice(0, data.events.length - 20);
     }
+
+    // Update our local tracking
+    lastFishCount = data.fish.length;
+
     return true;
   } catch (err) {
     console.warn('[playhtml] Failed to add fish:', err);
@@ -124,12 +143,47 @@ export function getSharedFish() {
 }
 
 function getSharedAquariumData() {
-  const handler = getHandler(AQUARIUM_EL_ID);
-  if (!handler) return { fish: [], events: [] };
+  if (!initialized) return { fish: [], events: [] };
   try {
-    return handler.data || { fish: [], events: [] };
+    const store = playhtml.syncedStore;
+    if (!store || !store['aquarium']) return { fish: [], events: [] };
+    return store['aquarium'];
   } catch {
     return { fish: [], events: [] };
+  }
+}
+
+/**
+ * Clear the entire shared aquarium (admin function).
+ */
+export function clearSharedAquarium() {
+  if (!initialized) return false;
+  try {
+    const store = playhtml.syncedStore;
+    if (!store) return false;
+    store['aquarium'] = { fish: [], events: [] };
+    lastFishCount = 0;
+    return true;
+  } catch (err) {
+    console.warn('[playhtml] Failed to clear aquarium:', err);
+    return false;
+  }
+}
+
+/**
+ * Clear the leaderboard (admin function).
+ */
+export function clearLeaderboard() {
+  if (!initialized) return false;
+  try {
+    const store = playhtml.syncedStore;
+    if (!store) return false;
+    store['leaderboard'] = { players: {} };
+    lastLeaderboardHash = '';
+    return true;
+  } catch (err) {
+    console.warn('[playhtml] Failed to clear leaderboard:', err);
+    return false;
   }
 }
 
@@ -139,34 +193,35 @@ function getSharedAquariumData() {
  * Update player's leaderboard entry after a catch.
  */
 export function updateLeaderboard(playerName, fishRecord) {
-  const handler = getHandler(LEADERBOARD_EL_ID);
-  if (!handler) return;
+  if (!initialized) return;
 
   try {
-    handler.setData((draft) => {
-      if (!draft.players) draft.players = {};
+    const store = playhtml.syncedStore;
+    if (!store) return;
 
-      if (!draft.players[playerName]) {
-        draft.players[playerName] = {
-          totalCaught: 0,
-          biggestWeight: 0,
-          biggestFish: '',
-          lastActive: Date.now(),
-        };
-      }
+    if (!store['leaderboard']) {
+      store['leaderboard'] = { players: {} };
+    }
 
-      const player = draft.players[playerName];
-      player.totalCaught += 1;
-      player.lastActive = Date.now();
+    const data = store['leaderboard'];
+    if (!data.players) data.players = {};
 
-      if (fishRecord.weight > player.biggestWeight) {
-        player.biggestWeight = fishRecord.weight;
-        player.biggestFish = `${fishRecord.customName} (${fishRecord.species})`;
-      }
-    });
+    if (!data.players[playerName]) {
+      data.players[playerName] = {
+        totalCaught: 0,
+        biggestWeight: 0,
+        biggestFish: '',
+        lastActive: Date.now(),
+      };
+    }
 
-    if (onStateChangeCallback) {
-      onStateChangeCallback('leaderboard', getLeaderboard());
+    const player = data.players[playerName];
+    player.totalCaught += 1;
+    player.lastActive = Date.now();
+
+    if (fishRecord.weight > player.biggestWeight) {
+      player.biggestWeight = fishRecord.weight;
+      player.biggestFish = `${fishRecord.customName} (${fishRecord.species})`;
     }
   } catch (err) {
     console.warn('[playhtml] Failed to update leaderboard:', err);
@@ -177,10 +232,11 @@ export function updateLeaderboard(playerName, fishRecord) {
  * Get leaderboard data.
  */
 export function getLeaderboard() {
-  const handler = getHandler(LEADERBOARD_EL_ID);
-  if (!handler) return { players: {} };
+  if (!initialized) return { players: {} };
   try {
-    return handler.data || { players: {} };
+    const store = playhtml.syncedStore;
+    if (!store || !store['leaderboard']) return { players: {} };
+    return store['leaderboard'];
   } catch {
     return { players: {} };
   }

@@ -282,16 +282,22 @@ export const FISH_SPECIES = [
 ];
 
 /**
- * Roll a random fish based on weighted rarity and max accessible depth.
- * Common: 40%, Uncommon: 30%, Rare: 18%, Legendary: 7%, Junk: 5%
+ * Roll a random fish based on weighted rarity.
+ * All fish are always catchable. Sinker upgrade boosts rare/legendary chances.
+ * Base rates — Common: 40%, Uncommon: 30%, Rare: 18%, Legendary: 7%, Junk: 5%
+ * Each sinker level shifts 5% from common into rare+legendary.
  */
 export function rollFish(maxDepth = 1, rarityBoost = 0) {
   const roll = Math.random();
 
+  // Sinker bonus: each depth level adds to rare/legendary odds
+  const depthBonus = (maxDepth - 1) * 0.05;
+  const totalBoost = rarityBoost + depthBonus;
+
   const junkThreshold = 0.05;
-  const legendaryThreshold = 0.95 - rarityBoost;
-  const rareThreshold = 0.77 - rarityBoost;
-  const uncommonThreshold = 0.40 - rarityBoost * 0.5;
+  const legendaryThreshold = 0.95 - totalBoost;
+  const rareThreshold = 0.77 - totalBoost;
+  const uncommonThreshold = 0.40 - totalBoost * 0.5;
 
   let tier;
   if (roll < junkThreshold) tier = 'junk';
@@ -300,11 +306,12 @@ export function rollFish(maxDepth = 1, rarityBoost = 0) {
   else if (roll >= uncommonThreshold) tier = 'uncommon';
   else tier = 'common';
 
-  let pool = FISH_SPECIES.filter(f => f.rarity === tier && f.depth <= maxDepth);
+  // All fish available regardless of depth
+  let pool = FISH_SPECIES.filter(f => f.rarity === tier);
 
-  // Fallback: if no fish available at this tier+depth, pick from all available
+  // Fallback
   if (pool.length === 0) {
-    pool = FISH_SPECIES.filter(f => f.depth <= maxDepth && f.rarity !== 'junk');
+    pool = FISH_SPECIES.filter(f => f.rarity !== 'junk');
   }
 
   return pool[Math.floor(Math.random() * pool.length)];
