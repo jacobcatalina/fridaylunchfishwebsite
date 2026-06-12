@@ -138,7 +138,7 @@ function showCatchPrompt(fish, weight, size) {
   // Render sprite in preview
   const previewEl = document.getElementById('caught-fish-preview');
   previewEl.innerHTML = '';
-  const spriteEl = createSpriteElement(fish.spriteKey, fish.emoji, 64);
+  const spriteEl = createSpriteElement(fish.spriteKey, fish.emoji, 80);
   previewEl.appendChild(spriteEl);
 
   document.getElementById('caught-rarity').textContent = rarityLabel(fish.rarity);
@@ -146,6 +146,13 @@ function showCatchPrompt(fish, weight, size) {
   document.getElementById('caught-weight').textContent = `${weight} lbs`;
   document.getElementById('caught-size').textContent = `${size} in`;
   document.getElementById('sell-price').textContent = `$${sellPrice}`;
+
+  // Show fish info/fun fact
+  const infoEl = document.getElementById('caught-info');
+  if (infoEl) {
+    infoEl.textContent = fish.info || '';
+  }
+
   document.getElementById('fish-name-input').value = '';
   document.getElementById('catch-prompt').classList.remove('hidden');
   document.getElementById('fish-name-input').focus();

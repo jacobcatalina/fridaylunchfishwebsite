@@ -1,9 +1,10 @@
 /**
- * Sprite configuration — maps fish species to their asset files.
+ * Sprite configuration — maps fish species to real fish images.
  * 
- * Only using named, identifiable fish sprites. The "66 Fishies" pack 
- * contains generic pixel art that can't be matched to real species,
- * so we skip it. Species without a sprite fall back to emoji.
+ * Each species gets a real photograph/illustration saved as:
+ *   public/assets/fish/{spriteKey}.png
+ * 
+ * See FISH_IMAGES_NEEDED.md for the download list.
  */
 
 import { registerSprite, registerGridSheet } from './sprites.js';
@@ -12,40 +13,44 @@ import { registerSprite, registerGridSheet } from './sprites.js';
  * Initialize all sprites. Called at app start.
  */
 export async function initSprites() {
-  // === Named fish sprites (16x16, scaled up with pixelated rendering) ===
-  // These are clearly identifiable real fish
-  registerSprite('largemouth-bass', '/assets/fish/Bass.png');
-  registerSprite('white-catfish', '/assets/fish/Catfish.png');
-  registerSprite('brook-trout', '/assets/fish/Rainbow Trout.png');
-  registerSprite('anchovy', '/assets/fish/Anchovy.png');
-  registerSprite('clownfish', '/assets/fish/Clownfish.png');
-  registerSprite('angelfish', '/assets/fish/Angelfish.png');
-  registerSprite('goldfish', '/assets/fish/Goldfish.png');
-  registerSprite('pufferfish', '/assets/fish/Pufferfish.png');
-  registerSprite('surgeonfish', '/assets/fish/Surgeonfish.png');
+  // === Real fish images (one per species) ===
+  // These are actual photos/illustrations of each species
+  const fishBase = '/assets/fish';
 
-  // Bonus items
-  registerSprite('rusty-can', '/assets/fish/Rusty Can.png');
-  registerSprite('worm', '/assets/fish/Worm.png');
+  // Common - Surface
+  registerSprite('golden-shiner', `${fishBase}/golden-shiner.png`);
+  registerSprite('pumpkinseed', `${fishBase}/pumpkinseed.png`);
+  registerSprite('yellow-perch', `${fishBase}/yellow-perch.png`);
+  registerSprite('black-crappie', `${fishBase}/black-crappie.png`);
+  registerSprite('carp', `${fishBase}/carp.png`);
 
-  // === Blobfish spritesheet (256x256, 4x4 grid of 64x64 frames) ===
-  registerGridSheet('/assets/sheets/Blobfish Spritesheet.png', {
-    frameWidth: 64,
-    frameHeight: 64,
-    columns: 4,
-    rows: 4,
-    mapping: [
-      'blobfish', 'blobfish', 'blobfish', 'blobfish',
-      'blobfish', 'blobfish', 'blobfish', 'blobfish',
-      'blobfish', 'blobfish', 'blobfish', 'blobfish',
-      'blobfish', 'blobfish', 'blobfish', 'blobfish',
-    ],
-  });
+  // Common - Mid
+  registerSprite('white-catfish', `${fishBase}/white-catfish.png`);
+  registerSprite('largemouth-bass', `${fishBase}/largemouth-bass.png`);
 
-  // === pack1 (single 64x64 sprite) — recoloured bass ===
-  registerSprite('atlantic-bass', '/assets/sheets/pack1_global_free_recoloured.png');
+  // Uncommon - Surface
+  registerSprite('alewife', `${fishBase}/alewife.png`);
+  registerSprite('blueback-herring', `${fishBase}/blueback-herring.png`);
 
-  // === pack2 Fishing Items sheet (512x64, 8 cols of 64x64) — for shop UI ===
+  // Uncommon - Mid
+  registerSprite('striped-bass', `${fishBase}/striped-bass.png`);
+  registerSprite('american-shad', `${fishBase}/american-shad.png`);
+  registerSprite('bluefish', `${fishBase}/bluefish.png`);
+
+  // Rare - Deep
+  registerSprite('brook-trout', `${fishBase}/brook-trout.png`);
+  registerSprite('atlantic-cod', `${fishBase}/atlantic-cod.png`);
+  registerSprite('american-eel', `${fishBase}/american-eel.png`);
+
+  // Legendary - Deep
+  registerSprite('giant-bluefin-tuna', `${fishBase}/giant-bluefin-tuna.png`);
+  registerSprite('prehistoric-coelacanth', `${fishBase}/prehistoric-coelacanth.png`);
+  registerSprite('blobfish', `${fishBase}/blobfish.png`);
+
+  // Junk
+  registerSprite('rusty-can', `${fishBase}/rusty-can.png`);
+
+  // === Fishing items sheet (for shop UI) ===
   registerGridSheet('/assets/sheets/pack2_ItemsFishingA.png', {
     frameWidth: 64,
     frameHeight: 64,

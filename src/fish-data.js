@@ -1,52 +1,259 @@
 /**
  * Boston / Massachusetts fish species for the game.
- * Each fish has a spriteKey that maps to the sprite registry.
- * depth: 1 = surface, 2 = mid, 3 = deep (requires upgrades to access)
+ * Each fish has a spriteKey, fun facts, and gameplay stats.
+ * depth: 1 = surface, 2 = mid, 3 = deep (requires sinker upgrades)
  */
 export const FISH_SPECIES = [
-  // Common — Surface (depth 1)
-  { name: 'Golden Shiner', spriteKey: 'golden-shiner', emoji: '🐠', rarity: 'common', speed: 0.9, depth: 1, basePrice: 5, minWeight: 0.1, maxWeight: 0.5 },
-  { name: 'Pumpkinseed', spriteKey: 'pumpkinseed', emoji: '🐠', rarity: 'common', speed: 1.0, depth: 1, basePrice: 8, minWeight: 0.2, maxWeight: 0.8 },
-  { name: 'Yellow Perch', spriteKey: 'yellow-perch', emoji: '🐠', rarity: 'common', speed: 1.0, depth: 1, basePrice: 10, minWeight: 0.3, maxWeight: 1.5 },
-  { name: 'Black Crappie', spriteKey: 'black-crappie', emoji: '🐟', rarity: 'common', speed: 1.0, depth: 1, basePrice: 12, minWeight: 0.5, maxWeight: 2.0 },
-  { name: 'Carp', spriteKey: 'carp', emoji: '🐟', rarity: 'common', speed: 0.7, depth: 1, basePrice: 6, minWeight: 2.0, maxWeight: 15.0 },
+  // === Common — Surface (depth 1) ===
+  {
+    name: 'Golden Shiner',
+    spriteKey: 'golden-shiner',
+    emoji: '🐠',
+    rarity: 'common',
+    speed: 0.9,
+    depth: 1,
+    basePrice: 5,
+    minWeight: 0.1,
+    maxWeight: 0.5,
+    info: 'The most widely pond-cultured fish in the US. Popular as bait, they travel in large shimmering schools.',
+  },
+  {
+    name: 'Pumpkinseed',
+    spriteKey: 'pumpkinseed',
+    emoji: '🐠',
+    rarity: 'common',
+    speed: 1.0,
+    depth: 1,
+    basePrice: 8,
+    minWeight: 0.2,
+    maxWeight: 0.8,
+    info: 'One of the most colorful freshwater fish in North America. Named for its round, flat body shape like a pumpkin seed.',
+  },
+  {
+    name: 'Yellow Perch',
+    spriteKey: 'yellow-perch',
+    emoji: '🐠',
+    rarity: 'common',
+    speed: 1.0,
+    depth: 1,
+    basePrice: 10,
+    minWeight: 0.3,
+    maxWeight: 1.5,
+    info: 'Easily recognized by dark vertical bars on a golden-yellow body. A favorite target for ice fishing in New England.',
+  },
+  {
+    name: 'Black Crappie',
+    spriteKey: 'black-crappie',
+    emoji: '🐟',
+    rarity: 'common',
+    speed: 1.0,
+    depth: 1,
+    basePrice: 12,
+    minWeight: 0.5,
+    maxWeight: 2.0,
+    info: 'Covered in irregular dark spots. They feed most actively at dawn and dusk, making them a classic evening catch.',
+  },
+  {
+    name: 'Carp',
+    spriteKey: 'carp',
+    emoji: '🐟',
+    rarity: 'common',
+    speed: 0.7,
+    depth: 1,
+    basePrice: 6,
+    minWeight: 2.0,
+    maxWeight: 15.0,
+    info: 'Introduced from Europe in the 1800s. Can live 20+ years and grow enormous. Considered a sport fish in many countries.',
+  },
 
-  // Common — Mid (depth 2)
-  { name: 'White Catfish', spriteKey: 'white-catfish', emoji: '🐟', rarity: 'common', speed: 0.8, depth: 2, basePrice: 15, minWeight: 1.0, maxWeight: 5.0 },
-  { name: 'Largemouth Bass', spriteKey: 'largemouth-bass', emoji: '🐟', rarity: 'common', speed: 1.1, depth: 2, basePrice: 18, minWeight: 1.0, maxWeight: 8.0 },
+  // === Common — Mid (depth 2) ===
+  {
+    name: 'White Catfish',
+    spriteKey: 'white-catfish',
+    emoji: '🐟',
+    rarity: 'common',
+    speed: 0.8,
+    depth: 2,
+    basePrice: 15,
+    minWeight: 1.0,
+    maxWeight: 5.0,
+    info: 'Has 8 whisker-like barbels for sensing food in murky water. Nocturnal feeders — most active after dark.',
+  },
+  {
+    name: 'Largemouth Bass',
+    spriteKey: 'largemouth-bass',
+    emoji: '🐟',
+    rarity: 'common',
+    speed: 1.1,
+    depth: 2,
+    basePrice: 18,
+    minWeight: 1.0,
+    maxWeight: 8.0,
+    info: 'The king of freshwater sport fishing. Its mouth can open wide enough to swallow prey half its own size.',
+  },
 
-  // Uncommon — Surface (depth 1)
-  { name: 'Alewife', spriteKey: 'alewife', emoji: '🐠', rarity: 'uncommon', speed: 1.3, depth: 1, basePrice: 20, minWeight: 0.2, maxWeight: 0.6 },
-  { name: 'Blueback Herring', spriteKey: 'blueback-herring', emoji: '🐠', rarity: 'uncommon', speed: 1.3, depth: 1, basePrice: 22, minWeight: 0.2, maxWeight: 0.5 },
+  // === Uncommon — Surface (depth 1) ===
+  {
+    name: 'Alewife',
+    spriteKey: 'alewife',
+    emoji: '🐠',
+    rarity: 'uncommon',
+    speed: 1.3,
+    depth: 1,
+    basePrice: 20,
+    minWeight: 0.2,
+    maxWeight: 0.6,
+    info: 'A migratory fish that swims from the ocean up rivers to spawn. Critical food source for larger predators in the Charles River.',
+  },
+  {
+    name: 'Blueback Herring',
+    spriteKey: 'blueback-herring',
+    emoji: '🐠',
+    rarity: 'uncommon',
+    speed: 1.3,
+    depth: 1,
+    basePrice: 22,
+    minWeight: 0.2,
+    maxWeight: 0.5,
+    info: 'Named for its distinctive blue-green back. Once so abundant in New England rivers they were used as fertilizer.',
+  },
 
-  // Uncommon — Mid (depth 2)
-  { name: 'Striped Bass', spriteKey: 'striped-bass', emoji: '🐡', rarity: 'uncommon', speed: 1.4, depth: 2, basePrice: 35, minWeight: 3.0, maxWeight: 30.0 },
-  { name: 'American Shad', spriteKey: 'american-shad', emoji: '🐟', rarity: 'uncommon', speed: 1.4, depth: 2, basePrice: 28, minWeight: 1.0, maxWeight: 5.0 },
-  { name: 'Bluefish', spriteKey: 'bluefish', emoji: '🐟', rarity: 'uncommon', speed: 1.5, depth: 2, basePrice: 32, minWeight: 2.0, maxWeight: 12.0 },
+  // === Uncommon — Mid (depth 2) ===
+  {
+    name: 'Striped Bass',
+    spriteKey: 'striped-bass',
+    emoji: '🐡',
+    rarity: 'uncommon',
+    speed: 1.4,
+    depth: 2,
+    basePrice: 35,
+    minWeight: 3.0,
+    maxWeight: 30.0,
+    info: 'The iconic fish of Boston Harbor. Their spring migration up the coast draws anglers from everywhere. Can live 30+ years.',
+  },
+  {
+    name: 'American Shad',
+    spriteKey: 'american-shad',
+    emoji: '🐟',
+    rarity: 'uncommon',
+    speed: 1.4,
+    depth: 2,
+    basePrice: 28,
+    minWeight: 1.0,
+    maxWeight: 5.0,
+    info: 'The largest member of the herring family in North America. George Washington fished for shad on the Potomac.',
+  },
+  {
+    name: 'Bluefish',
+    spriteKey: 'bluefish',
+    emoji: '🐟',
+    rarity: 'uncommon',
+    speed: 1.5,
+    depth: 2,
+    basePrice: 32,
+    minWeight: 2.0,
+    maxWeight: 12.0,
+    info: 'Aggressive predators with razor-sharp teeth. Known to continue feeding even after they are full — pure chaos energy.',
+  },
 
-  // Rare — Deep (depth 3)
-  { name: 'Brook Trout', spriteKey: 'brook-trout', emoji: '🐡', rarity: 'rare', speed: 1.8, depth: 3, basePrice: 50, minWeight: 0.5, maxWeight: 5.0 },
-  { name: 'Atlantic Cod', spriteKey: 'atlantic-cod', emoji: '🐟', rarity: 'rare', speed: 1.7, depth: 3, basePrice: 60, minWeight: 5.0, maxWeight: 40.0 },
-  { name: 'American Eel', spriteKey: 'american-eel', emoji: '🐍', rarity: 'rare', speed: 2.0, depth: 3, basePrice: 75, minWeight: 1.0, maxWeight: 8.0 },
+  // === Rare — Deep (depth 3) ===
+  {
+    name: 'Brook Trout',
+    spriteKey: 'brook-trout',
+    emoji: '🐡',
+    rarity: 'rare',
+    speed: 1.8,
+    depth: 3,
+    basePrice: 50,
+    minWeight: 0.5,
+    maxWeight: 5.0,
+    info: 'Massachusetts\' native trout — actually a char, not a true trout. Covered in beautiful red spots with blue halos.',
+  },
+  {
+    name: 'Atlantic Cod',
+    spriteKey: 'atlantic-cod',
+    emoji: '🐟',
+    rarity: 'rare',
+    speed: 1.7,
+    depth: 3,
+    basePrice: 60,
+    minWeight: 5.0,
+    maxWeight: 40.0,
+    info: 'Once so plentiful off Cape Cod it gave the cape its name. Overfishing collapsed stocks in the 1990s; still recovering.',
+  },
+  {
+    name: 'American Eel',
+    spriteKey: 'american-eel',
+    emoji: '🐍',
+    rarity: 'rare',
+    speed: 2.0,
+    depth: 3,
+    basePrice: 75,
+    minWeight: 1.0,
+    maxWeight: 8.0,
+    info: 'Born in the Sargasso Sea, they migrate thousands of miles to freshwater. Can absorb oxygen through their skin.',
+  },
 
-  // Legendary — Deep (depth 3)
-  { name: 'Giant Bluefin Tuna', spriteKey: 'giant-bluefin-tuna', emoji: '🐋', rarity: 'legendary', speed: 2.3, depth: 3, basePrice: 200, minWeight: 50.0, maxWeight: 500.0 },
-  { name: 'Prehistoric Coelacanth', spriteKey: 'prehistoric-coelacanth', emoji: '🦴', rarity: 'legendary', speed: 2.5, depth: 3, basePrice: 500, minWeight: 30.0, maxWeight: 90.0 },
-  { name: 'Blobfish', spriteKey: 'blobfish', emoji: '🫠', rarity: 'legendary', speed: 1.5, depth: 3, basePrice: 350, minWeight: 3.0, maxWeight: 12.0 },
+  // === Legendary — Deep (depth 3) ===
+  {
+    name: 'Giant Bluefin Tuna',
+    spriteKey: 'giant-bluefin-tuna',
+    emoji: '🐋',
+    rarity: 'legendary',
+    speed: 2.3,
+    depth: 3,
+    basePrice: 200,
+    minWeight: 50.0,
+    maxWeight: 500.0,
+    info: 'Can weigh over 1,000 lbs and swim 45 mph. A single fish sold at auction in Japan for $3.1 million in 2019.',
+  },
+  {
+    name: 'Prehistoric Coelacanth',
+    spriteKey: 'prehistoric-coelacanth',
+    emoji: '🦴',
+    rarity: 'legendary',
+    speed: 2.5,
+    depth: 3,
+    basePrice: 500,
+    minWeight: 30.0,
+    maxWeight: 90.0,
+    info: 'A "living fossil" — thought extinct for 65 million years until one was caught in 1938. Has lobed fins that move like legs.',
+  },
+  {
+    name: 'Blobfish',
+    spriteKey: 'blobfish',
+    emoji: '🫠',
+    rarity: 'legendary',
+    speed: 1.5,
+    depth: 3,
+    basePrice: 350,
+    minWeight: 3.0,
+    maxWeight: 12.0,
+    info: 'Only looks blobby at the surface — at its normal depth (3,000+ ft), water pressure keeps it looking like a normal fish.',
+  },
 
-  // Bonus / Junk (can appear at any depth)
-  { name: 'Rusty Can', spriteKey: 'rusty-can', emoji: '🥫', rarity: 'common', speed: 0.3, depth: 1, basePrice: 1, minWeight: 0.5, maxWeight: 0.5 },
+  // === Junk ===
+  {
+    name: 'Rusty Can',
+    spriteKey: 'rusty-can',
+    emoji: '🥫',
+    rarity: 'common',
+    speed: 0.3,
+    depth: 1,
+    basePrice: 1,
+    minWeight: 0.5,
+    maxWeight: 0.5,
+    info: 'Not a fish. Someone littered. At least you\'re cleaning up the ocean!',
+  },
 ];
 
 /**
  * Roll a random fish based on weighted rarity and max accessible depth.
  * With bait bonus factored in.
- * Common: 50%, Uncommon: 30%, Rare: 15%, Legendary: 5%
  */
 export function rollFish(maxDepth = 1, rarityBoost = 0) {
   const roll = Math.random();
 
-  // Shift thresholds by rarity boost (bait upgrade)
   const legendaryThreshold = 0.95 - rarityBoost;
   const rareThreshold = 0.80 - rarityBoost;
   const uncommonThreshold = 0.50 - rarityBoost * 0.5;
@@ -59,7 +266,6 @@ export function rollFish(maxDepth = 1, rarityBoost = 0) {
 
   let pool = FISH_SPECIES.filter(f => f.rarity === tier && f.depth <= maxDepth);
 
-  // Fallback: if no fish available at this tier+depth, widen
   if (pool.length === 0) {
     pool = FISH_SPECIES.filter(f => f.depth <= maxDepth);
   }
@@ -72,7 +278,6 @@ export function rollFish(maxDepth = 1, rarityBoost = 0) {
  */
 export function rollWeight(fish) {
   const range = fish.maxWeight - fish.minWeight;
-  // Weighted toward smaller fish (use sqrt for distribution)
   const weight = fish.minWeight + range * Math.pow(Math.random(), 1.5);
   return Math.round(weight * 100) / 100;
 }

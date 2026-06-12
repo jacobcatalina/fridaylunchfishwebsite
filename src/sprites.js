@@ -148,7 +148,6 @@ export function createSpriteElement(speciesKey, fallbackEmoji = '🐟', displayS
     img.style.width = `${displaySize}px`;
     img.style.height = `${displaySize}px`;
     img.style.objectFit = 'contain';
-    img.style.imageRendering = 'pixelated';
     return img;
   }
 
