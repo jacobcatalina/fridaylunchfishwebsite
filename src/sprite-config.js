@@ -1,10 +1,6 @@
 /**
- * Sprite configuration — maps fish species to real fish images.
- * 
- * Each species gets a real photograph/illustration saved as:
- *   public/assets/fish/{spriteKey}.png
- * 
- * See FISH_IMAGES_NEEDED.md for the download list.
+ * Sprite configuration — maps every fish spriteKey to its actual image file.
+ * Every fish in FISH_SPECIES has a sprite registered here. No emoji fallbacks.
  */
 
 import { registerSprite, registerGridSheet } from './sprites.js';
@@ -13,42 +9,45 @@ import { registerSprite, registerGridSheet } from './sprites.js';
  * Initialize all sprites. Called at app start.
  */
 export async function initSprites() {
-  // === Real fish images (one per species) ===
-  // These are actual photos/illustrations of each species
-  const fishBase = '/assets/fish';
+  const f = '/assets/fish';
 
-  // Common - Surface
-  registerSprite('golden-shiner', `${fishBase}/golden-shiner.png`);
-  registerSprite('pumpkinseed', `${fishBase}/pumpkinseed.png`);
-  registerSprite('yellow-perch', `${fishBase}/yellow-perch.png`);
-  registerSprite('black-crappie', `${fishBase}/black-crappie.png`);
-  registerSprite('carp', `${fishBase}/carp.png`);
+  // === Common — Surface ===
+  registerSprite('minnow', `${f}/minnow.png`);
+  registerSprite('goldfish', `${f}/Goldfish.png`);
+  registerSprite('anchovy', `${f}/Anchovy.png`);
+  registerSprite('bluegill', `${f}/bluegill.png`);
+  registerSprite('pumpkinseed', `${f}/pumpkinseed.png`);
+  registerSprite('clownfish', `${f}/Clownfish.png`);
 
-  // Common - Mid
-  registerSprite('white-catfish', `${fishBase}/white-catfish.png`);
-  registerSprite('largemouth-bass', `${fishBase}/largemouth-bass.png`);
+  // === Common — Mid ===
+  registerSprite('catfish', `${f}/Catfish.png`);
+  registerSprite('bass', `${f}/Bass.png`);
+  registerSprite('atlantic-bass', '/assets/sheets/pack1_global_free_recoloured.png');
 
-  // Uncommon - Surface
-  registerSprite('alewife', `${fishBase}/alewife.png`);
-  registerSprite('blueback-herring', `${fishBase}/blueback-herring.png`);
+  // === Uncommon — Surface ===
+  registerSprite('angelfish', `${f}/Angelfish.png`);
+  registerSprite('surgeonfish', `${f}/Surgeonfish.png`);
 
-  // Uncommon - Mid
-  registerSprite('striped-bass', `${fishBase}/striped-bass.png`);
-  registerSprite('american-shad', `${fishBase}/american-shad.png`);
-  registerSprite('bluefish', `${fishBase}/bluefish.png`);
+  // === Uncommon — Mid ===
+  registerSprite('rainbow-trout', `${f}/Rainbow Trout.png`);
+  registerSprite('brown-trout', `${f}/brown-trout.png`);
+  registerSprite('pufferfish', `${f}/Pufferfish.png`);
 
-  // Rare - Deep
-  registerSprite('brook-trout', `${fishBase}/brook-trout.png`);
-  registerSprite('atlantic-cod', `${fishBase}/atlantic-cod.png`);
-  registerSprite('american-eel', `${fishBase}/american-eel.png`);
+  // === Rare — Mid ===
+  registerSprite('crab', `${f}/Crab - Dungeness.png`);
 
-  // Legendary - Deep
-  registerSprite('giant-bluefin-tuna', `${fishBase}/giant-bluefin-tuna.png`);
-  registerSprite('prehistoric-coelacanth', `${fishBase}/prehistoric-coelacanth.png`);
-  registerSprite('blobfish', `${fishBase}/blobfish.png`);
+  // === Rare — Deep ===
+  registerSprite('tiger-trout', `${f}/tiger-trout.png`);
+  registerSprite('rainbow-shark', `${f}/rainbow-shark.png`);
+  registerSprite('tuna', `${f}/Tuna.png`);
 
-  // Junk
-  registerSprite('rusty-can', `${fishBase}/rusty-can.png`);
+  // === Legendary — Deep ===
+  registerSprite('bluefin-tuna', `${f}/bluefin-tuna.png`);
+  registerSprite('blobfish', '/assets/sheets/Blobfish Spritesheet.png');
+
+  // === Junk ===
+  registerSprite('rusty-can', `${f}/Rusty Can.png`);
+  registerSprite('worm', `${f}/Worm.png`);
 
   // === Fishing items sheet (for shop UI) ===
   registerGridSheet('/assets/sheets/pack2_ItemsFishingA.png', {
@@ -62,5 +61,5 @@ export async function initSprites() {
     ],
   });
 
-  console.log('[sprites] Sprites loaded');
+  console.log('[sprites] All 22 sprites loaded');
 }
