@@ -38,6 +38,15 @@ export async function initSprites() {
   registerSprite('tiger-trout', `${f}/tiger-trout.png`);
   registerSprite('tuna', `${f}/Tuna.png`);
 
+  // === New creatures (varied sizes, all render well at normal size) ===
+  registerSprite('clam', `${f}/clam.png`);
+  registerSprite('octopus', `${f}/octopus.png`);
+  registerSprite('pearl', `${f}/pearl.png`);
+  registerSprite('sea-turtle', `${f}/sea turtle.png`);
+  registerSprite('seahorse', `${f}/seahorse.png`);
+  registerSprite('starfish', `${f}/starfish.png`);
+  registerSprite('whale', `${f}/whale.png`);
+
   // === Fishing items sheet (for shop UI) ===
   registerGridSheet('/assets/sheets/pack2_ItemsFishingA.png', {
     frameWidth: 64,

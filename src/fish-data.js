@@ -218,7 +218,7 @@ export const FISH_SPECIES = [
   },
 
   // =============================================
-  // LEGENDARY — Deep (depth 3) — 2 fish
+  // LEGENDARY — Deep (depth 3)
   // =============================================
   {
     name: 'Bluefin Tuna',
@@ -231,6 +231,92 @@ export const FISH_SPECIES = [
     maxWeight: 500.0,
     info: 'Can weigh over 1,000 lbs and swim 45 mph. A single fish sold at auction in Japan for $3.1 million in 2019.',
   },
+  {
+    name: 'Whale',
+    spriteKey: 'whale',
+    rarity: 'legendary',
+    speed: 1.6,
+    depth: 3,
+    basePrice: 500,
+    minWeight: 2000.0,
+    maxWeight: 80000.0,
+    info: 'Not a fish (they\'re mammals!), but you caught one anyway. Blue whales are the largest animals to ever live on Earth.',
+  },
+  {
+    name: 'Sea Turtle',
+    spriteKey: 'sea-turtle',
+    rarity: 'legendary',
+    speed: 1.3,
+    depth: 3,
+    basePrice: 300,
+    minWeight: 100.0,
+    maxWeight: 900.0,
+    info: 'Can live over 100 years and navigate thousands of miles using Earth\'s magnetic field. Please release this one!',
+  },
+
+  // =============================================
+  // RARE — Special catches
+  // =============================================
+  {
+    name: 'Octopus',
+    spriteKey: 'octopus',
+    rarity: 'rare',
+    speed: 1.9,
+    depth: 3,
+    basePrice: 65,
+    minWeight: 2.0,
+    maxWeight: 25.0,
+    info: 'Has three hearts, blue blood, and can change color in milliseconds. Considered one of the most intelligent invertebrates.',
+  },
+  {
+    name: 'Seahorse',
+    spriteKey: 'seahorse',
+    rarity: 'rare',
+    speed: 0.6,
+    depth: 2,
+    basePrice: 55,
+    minWeight: 0.01,
+    maxWeight: 0.05,
+    info: 'Males carry the babies — up to 2,000 at a time. They have no stomach so they eat almost constantly to stay alive.',
+  },
+  {
+    name: 'Pearl',
+    spriteKey: 'pearl',
+    rarity: 'rare',
+    speed: 0.4,
+    depth: 2,
+    basePrice: 100,
+    minWeight: 0.01,
+    maxWeight: 0.05,
+    info: 'Formed inside an oyster when an irritant gets trapped. A natural pearl of this size takes 5–20 years to form.',
+  },
+
+  // =============================================
+  // UNCOMMON — New additions
+  // =============================================
+  {
+    name: 'Starfish',
+    spriteKey: 'starfish',
+    rarity: 'uncommon',
+    speed: 0.5,
+    depth: 1,
+    basePrice: 18,
+    minWeight: 0.1,
+    maxWeight: 0.5,
+    info: 'Not actually a fish — they\'re echinoderms. Can regrow entire arms, and some species can regrow a whole body from one arm.',
+  },
+  {
+    name: 'Clam',
+    spriteKey: 'clam',
+    rarity: 'uncommon',
+    speed: 0.3,
+    depth: 1,
+    basePrice: 15,
+    minWeight: 0.2,
+    maxWeight: 1.5,
+    info: 'Can live for over 500 years — the oldest known animal was a clam named "Ming" born in 1499. Researchers accidentally killed it.',
+  },
+
   // =============================================
   // JUNK — Any depth — 2 items
   // =============================================
