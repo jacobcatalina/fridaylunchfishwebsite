@@ -70,7 +70,9 @@ export function registerSheet(sheetPath, frameData) {
  *   e.g. ["striped-bass", "brook-trout", "largemouth-bass", ...]
  */
 export function registerGridSheet(sheetPath, config) {
-  const { frameWidth, frameHeight, columns, mapping } = config;
+  const { frameWidth, frameHeight, columns, rows, mapping } = config;
+  const sheetWidth = columns * frameWidth;
+  const sheetHeight = rows * frameHeight;
 
   mapping.forEach((speciesKey, index) => {
     if (!speciesKey) return; // skip empty slots
@@ -78,17 +80,27 @@ export function registerGridSheet(sheetPath, config) {
     const col = index % columns;
     const row = Math.floor(index / columns);
 
-    spriteRegistry.set(speciesKey, {
-      type: 'sheet',
-      src: sheetPath,
-      frames: [{
+    // Only set if not already registered (first occurrence wins for animation frames)
+    if (!spriteRegistry.has(speciesKey)) {
+      spriteRegistry.set(speciesKey, {
+        type: 'sheet',
+        src: sheetPath,
+        sheetWidth,
+        sheetHeight,
+        frames: [],
+      });
+    }
+
+    const entry = spriteRegistry.get(speciesKey);
+    if (entry.type === 'sheet') {
+      entry.frames.push({
         name: speciesKey,
         x: col * frameWidth,
         y: row * frameHeight,
         w: frameWidth,
         h: frameHeight,
-      }],
-    });
+      });
+    }
   });
 }
 
@@ -158,14 +170,17 @@ export function createSpriteElement(speciesKey, fallbackEmoji = '🐟', displayS
   }
 
   if (entry.type === 'sheet' && entry.frames.length > 0) {
-    const frame = entry.frames[0]; // first frame (or we can animate later)
+    const frame = entry.frames[0]; // first frame
     const div = document.createElement('div');
     div.className = 'fish-sprite fish-sprite-sheet';
     div.style.width = `${displaySize}px`;
     div.style.height = `${displaySize}px`;
     div.style.backgroundImage = `url(${entry.src})`;
-    div.style.backgroundSize = `${(displaySize / frame.w) * getSheetWidth(entry)}px auto`;
-    div.style.backgroundPosition = `-${(frame.x / frame.w) * displaySize}px -${(frame.y / frame.h) * displaySize}px`;
+    // Scale the full sheet proportionally so each frame = displaySize
+    const scale = displaySize / frame.w;
+    const sheetW = entry.sheetWidth || getSheetWidth(entry);
+    div.style.backgroundSize = `${sheetW * scale}px auto`;
+    div.style.backgroundPosition = `-${frame.x * scale}px -${frame.y * scale}px`;
     div.style.backgroundRepeat = 'no-repeat';
     div.style.imageRendering = 'pixelated';
 

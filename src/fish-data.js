@@ -101,17 +101,6 @@ export const FISH_SPECIES = [
     maxWeight: 8.0,
     info: 'The king of freshwater sport fishing. Its mouth can open wide enough to swallow prey half its own size.',
   },
-  {
-    name: 'Atlantic Bass',
-    spriteKey: 'atlantic-bass',
-    rarity: 'common',
-    speed: 1.0,
-    depth: 2,
-    basePrice: 20,
-    minWeight: 1.5,
-    maxWeight: 6.0,
-    info: 'A schooling predator found along the Atlantic coast. They hunt in packs, cornering smaller fish against the surface.',
-  },
 
   // =============================================
   // UNCOMMON — Surface (depth 1) — 2 fish
@@ -242,18 +231,6 @@ export const FISH_SPECIES = [
     maxWeight: 500.0,
     info: 'Can weigh over 1,000 lbs and swim 45 mph. A single fish sold at auction in Japan for $3.1 million in 2019.',
   },
-  {
-    name: 'Blobfish',
-    spriteKey: 'blobfish',
-    rarity: 'legendary',
-    speed: 1.4,
-    depth: 3,
-    basePrice: 400,
-    minWeight: 3.0,
-    maxWeight: 12.0,
-    info: 'Only looks blobby at the surface — at its normal depth (3,000+ ft), water pressure keeps it looking like a normal fish.',
-  },
-
   // =============================================
   // JUNK — Any depth — 2 items
   // =============================================

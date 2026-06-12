@@ -38,10 +38,6 @@ export async function initSprites() {
   registerSprite('tiger-trout', `${f}/tiger-trout.png`);
   registerSprite('tuna', `${f}/Tuna.png`);
 
-  // === Sheet/pack sprites ===
-  registerSprite('atlantic-bass', '/assets/sheets/pack1_global_free_recoloured.png');
-  registerSprite('blobfish', '/assets/sheets/Blobfish Spritesheet.png');
-
   // === Fishing items sheet (for shop UI) ===
   registerGridSheet('/assets/sheets/pack2_ItemsFishingA.png', {
     frameWidth: 64,
